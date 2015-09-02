@@ -1,4 +1,7 @@
 ﻿using Demo.EF.Entities;
+using Demo.EF.Infrastructure;
+using Demo.EF.Repositories;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +14,25 @@ namespace Demo.EF
     {
         static void Main(string[] args)
         {
-            CreateStudent();
+            // WithDbContextDirectly();
+
+            WithUnitOfWork();
         }
 
-        private static void CreateStudent()
+        private static void WithUnitOfWork()
+        {
+            var context = new StudentDbContext();
+            IUnitOfWork unitOfWork = new UnitOfWork(context);
+
+            var repository = new StudentRepository();
+            repository.UnitOfWork = unitOfWork;
+
+            var student =repository.GetByKey(1);
+
+            Assert.AreEqual(1, student.ID);
+        }
+
+        private static void WithDbContextDirectly()
         {
             using (var context = new StudentDbContext())
             {
