@@ -2,6 +2,7 @@
 using Demo.EF.Infrastructure;
 using Demo.EF.Repositories;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +13,13 @@ namespace Demo.EF
 {
     class Program
     {
+        static Logger logger = LogManager.GetCurrentClassLogger();
+
         static void Main(string[] args)
         {
-            // WithDbContextDirectly();
+            WithDbContextDirectly();
 
-            WithUnitOfWork();
+            //  WithUnitOfWork();
         }
 
         private static void WithUnitOfWork()
@@ -27,7 +30,7 @@ namespace Demo.EF
             var repository = new StudentRepository();
             repository.UnitOfWork = unitOfWork;
 
-            var student =repository.GetByKey(1);
+            var student = repository.GetByKey(1);
 
             Assert.AreEqual(1, student.ID);
         }
@@ -36,6 +39,16 @@ namespace Demo.EF
         {
             using (var context = new StudentDbContext())
             {
+                /*
+                //Output the log to Console
+                context.Database.Log = Console.WriteLine;
+                
+                //Output the log to Output window
+                context.Database.Log = (x => System.Diagnostics.Debug.WriteLine(x));
+                */
+
+                context.Database.Log = x => logger.Log(LogLevel.Info, x);
+
                 var original = context.Set<Student>().Find(1);
                 if (original != null)
                 {
